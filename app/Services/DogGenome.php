@@ -244,7 +244,6 @@ class DogGenome
                     default => 'Wild type (wolf-like)'
                 },
                 'tan_points' => "$color with tan points",
-//                'recessive_black' => $color,
                 default => $color
             }
         };

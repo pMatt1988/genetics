@@ -66,7 +66,7 @@ class GeneticsGame extends Component
             'Solid brindle'
         ];
 
-        $colors = ['black', 'brown', 'blue', 'isabella'];
+        $colors = ['Black', 'Brown', 'Blue', 'Isabella'];
 
         // Always include the correct answer
         $choices = [$correctAnswer];
