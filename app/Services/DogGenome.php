@@ -168,8 +168,7 @@ class DogGenome
         $genotype = implode('', $allele_pair);
 
         return match($genotype) {
-            'SwSw' => 'mostly_white',
-            'ss' => 'solid',
+            'SS', 'Ss' => 'solid',
             default => 'pied'
         };
     }
