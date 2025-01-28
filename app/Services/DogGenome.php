@@ -211,7 +211,6 @@ class DogGenome
         $baseDescription = match($kPattern) {
             'dominant_black' => $color,
             'brindle' => match($agoutiPattern) {
-                'sable' => "$color brindle sable",
                 'wild' => "$color brindle wolf-like pattern",
                 'tan_points' => "$color with brindle points",
                 default => "$color brindle"
