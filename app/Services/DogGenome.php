@@ -59,23 +59,55 @@ class DogGenome
 
     protected function orderAlleles(string $allele1, string $allele2, array $patterns): array
     {
-        // Get dominant alleles
+        // Get pattern info for each allele
+        $getPatternInfo = function($allele) use ($patterns) {
+            foreach ($patterns as $info) {
+                if ($info['allele'] === $allele) return $info;
+            }
+            return null;
+        };
+
+        $info1 = $getPatternInfo($allele1);
+        $info2 = $getPatternInfo($allele2);
+
+        // First check priority if it exists
+        if (isset($info1['priority']) && isset($info2['priority'])) {
+            if ($info1['priority'] !== $info2['priority']) {
+                return $info1['priority'] > $info2['priority'] ?
+                    [$allele1, $allele2] :
+                    [$allele2, $allele1];
+            }
+        }
+
+        // Get fully dominant alleles
         $dominant_alleles = array_column(
-            array_filter($patterns, fn($info) => $info['dominant'] ?? false),
+            array_filter($patterns, fn($info) => ($info['dominant'] ?? false) && !($info['intermediate'] ?? false)),
             'allele'
         );
 
-        // If first allele is recessive and second is dominant, swap them
-        if (!in_array($allele1, $dominant_alleles) && in_array($allele2, $dominant_alleles)) {
-            return [$allele2, $allele1];
+        // Get intermediate dominant alleles
+        $intermediate_alleles = array_column(
+            array_filter($patterns, fn($info) => $info['intermediate'] ?? false),
+            'allele'
+        );
+
+        // Helper function to get dominance level (2 for dominant, 1 for intermediate, 0 for recessive)
+        $getDominanceLevel = function($allele) use ($dominant_alleles, $intermediate_alleles) {
+            if (in_array($allele, $dominant_alleles)) return 2;
+            if (in_array($allele, $intermediate_alleles)) return 1;
+            return 0;
+        };
+
+        $level1 = $getDominanceLevel($allele1);
+        $level2 = $getDominanceLevel($allele2);
+
+        // If different dominance levels, higher dominance goes first
+        if ($level1 !== $level2) {
+            return $level1 > $level2 ? [$allele1, $allele2] : [$allele2, $allele1];
         }
 
-        // If both are dominant or both recessive, order by string value
-        if (in_array($allele1, $dominant_alleles) === in_array($allele2, $dominant_alleles)) {
-            return $allele1 > $allele2 ? [$allele1, $allele2] : [$allele2, $allele1];
-        }
-
-        return [$allele1, $allele2];
+        // If same dominance level, order by string value
+        return $allele1 > $allele2 ? [$allele1, $allele2] : [$allele2, $allele1];
     }
 
     protected function calculatePhenotype(): void
