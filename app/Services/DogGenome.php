@@ -9,27 +9,40 @@ class DogGenome
 
     const INHERITANCE_PATTERNS = [
         'dominant_black' => [
-            'solid_black' => ['dominant' => true, 'allele' => 'K'],
-            'brindle' => ['intermediate' => true, 'allele' => 'kbr'],
-            'allows_agouti' => ['dominant' => false, 'allele' => 'ky'],
+            'solid_black' => ['dominant' => true,
+                'allele' => 'K'],
+            'brindle' => ['intermediate' => true,
+                'allele' => 'kbr'],
+            'allows_agouti' => ['dominant' => false,
+                'allele' => 'ky'],
         ],
         'agouti' => [
-            'sable' => ['dominant' => true, 'allele' => 'Ay'],
-            'wild' => ['dominant' => true, 'allele' => 'Aw'],
-            'tan_points' => ['dominant' => false, 'allele' => 'at'],
-            'recessive_black' => ['dominant' => false, 'allele' => 'a'],
+            'sable' => ['dominant' => true,
+                'allele' => 'Ay'],
+            'wild' => ['dominant' => true,
+                'allele' => 'Aw'],
+            'tan_points' => ['dominant' => false,
+                'allele' => 'at'],
+            'recessive_black' => ['dominant' => false,
+                'allele' => 'a'],
         ],
         'base_color' => [
-            'black' => ['dominant' => true, 'allele' => 'B'],
-            'brown' => ['dominant' => false, 'allele' => 'b']
+            'black' => ['dominant' => true,
+                'allele' => 'B'],
+            'brown' => ['dominant' => false,
+                'allele' => 'b']
         ],
         'white_spotting' => [
-            'solid' => ['dominant' => true, 'allele' => 'S'],
-            'pied' => ['dominant' => false, 'allele' => 'sp']
+            'solid' => ['dominant' => true,
+                'allele' => 'S'],
+            'pied' => ['dominant' => false,
+                'allele' => 'sp']
         ],
         'dilution' => [
-            'normal' => ['dominant' => true, 'allele' => 'D'],
-            'dilute' => ['dominant' => false, 'allele' => 'd']
+            'normal' => ['dominant' => true,
+                'allele' => 'D'],
+            'dilute' => ['dominant' => false,
+                'allele' => 'd']
         ]
     ];
 
@@ -59,7 +72,7 @@ class DogGenome
     protected function orderAlleles(string $allele1, string $allele2, array $patterns): array
     {
         // Get pattern info for each allele
-        $getPatternInfo = function($allele) use ($patterns) {
+        $getPatternInfo = function ($allele) use ($patterns) {
             foreach ($patterns as $info) {
                 if ($info['allele'] === $allele) return $info;
             }
@@ -73,8 +86,10 @@ class DogGenome
         if (isset($info1['priority']) && isset($info2['priority'])) {
             if ($info1['priority'] !== $info2['priority']) {
                 return $info1['priority'] > $info2['priority'] ?
-                    [$allele1, $allele2] :
-                    [$allele2, $allele1];
+                    [$allele1,
+                        $allele2] :
+                    [$allele2,
+                        $allele1];
             }
         }
 
@@ -91,7 +106,7 @@ class DogGenome
         );
 
         // Helper function to get dominance level (2 for dominant, 1 for intermediate, 0 for recessive)
-        $getDominanceLevel = function($allele) use ($dominant_alleles, $intermediate_alleles) {
+        $getDominanceLevel = function ($allele) use ($dominant_alleles, $intermediate_alleles) {
             if (in_array($allele, $dominant_alleles)) return 2;
             if (in_array($allele, $intermediate_alleles)) return 1;
             return 0;
@@ -102,11 +117,15 @@ class DogGenome
 
         // If different dominance levels, higher dominance goes first
         if ($level1 !== $level2) {
-            return $level1 > $level2 ? [$allele1, $allele2] : [$allele2, $allele1];
+            return $level1 > $level2 ? [$allele1,
+                $allele2] : [$allele2,
+                $allele1];
         }
 
         // If same dominance level, order by string value
-        return $allele1 > $allele2 ? [$allele1, $allele2] : [$allele2, $allele1];
+        return $allele1 > $allele2 ? [$allele1,
+            $allele2] : [$allele2,
+            $allele1];
     }
 
     protected function calculatePhenotype(): void
@@ -154,7 +173,7 @@ class DogGenome
 
     protected function getDilutedColor(string $baseColor): string
     {
-        return match($baseColor) {
+        return match ($baseColor) {
             'black' => 'blue',
             'brown' => 'isabella',
             default => $baseColor
@@ -167,8 +186,9 @@ class DogGenome
         sort($allele_pair);
         $genotype = implode('', $allele_pair);
 
-        return match($genotype) {
-            'SS', 'Ss' => 'solid',
+        return match ($genotype) {
+            'SS' => 'solid',
+            'Ssp' => 'minimal_white',
             default => 'pied'
         };
     }
@@ -208,16 +228,16 @@ class DogGenome
         $color = ucfirst($color);
 
         // First determine base appearance based on K locus
-        $baseDescription = match($kPattern) {
+        $baseDescription = match ($kPattern) {
             'dominant_black' => $color,
-            'brindle' => match($agoutiPattern) {
+            'brindle' => match ($agoutiPattern) {
                 'wild' => "$color brindle wolf-like pattern",
                 'tan_points' => "$color with brindle points",
                 default => "$color brindle"
             },
-            'allows_agouti' => match($agoutiPattern) {
+            'allows_agouti' => match ($agoutiPattern) {
                 'sable' => "Sable with $color overlay",
-                'wild' => match($color) {
+                'wild' => match ($color) {
                     'blue' => 'Blue-gray wolf-like pattern',
                     'isabella' => 'Isabella wolf-like pattern',
                     default => 'Wild type (wolf-like)'
@@ -229,11 +249,12 @@ class DogGenome
         };
 
         // Then add white pattern modifications
-        if ($pattern === 'solid') {
-            return $baseDescription;
-        } else {
-            return "$baseDescription with white patches";
-        }
+
+        return match ($pattern) {
+            'solid' => $baseDescription,
+            'minimal_white' => "$baseDescription with minimal white",
+            default => "$baseDescription with white patches"
+        };
     }
 
     public function getAlleles(): array
