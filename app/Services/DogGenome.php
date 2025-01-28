@@ -211,28 +211,31 @@ class DogGenome
         $baseDescription = match($kPattern) {
             'dominant_black' => $color,
             'brindle' => match($agoutiPattern) {
-                'sable' => 'Brindle sable',
-                'wild' => 'Brindle wolf-like pattern',
-                'tan_points' => 'Brindle with tan points',
-                'recessive_black' => 'Brindle',
-                default => 'Brindle'
+                'sable' => "Brindle sable",
+                'wild' => "Brindle wolf-like pattern",
+                'tan_points' => "Brindle with tan points",
+                'recessive_black' => "Brindle",
+                default => "Brindle"
             },
             'allows_agouti' => match($agoutiPattern) {
-                'sable' => 'Sable with ' . $color . ' overlay',
-                'wild' => 'Wild type (wolf-like)',
-                'tan_points' => $color . ' with tan points',
+                'sable' => "Sable with $color overlay",
+                'wild' => match($color) {
+                    'blue' => 'Blue-gray wolf-like pattern',
+                    'isabella' => 'Isabella wolf-like pattern',
+                    default => 'Wild type (wolf-like)'
+                },
+                'tan_points' => "$color with tan points",
                 'recessive_black' => $color,
                 default => $color
             }
         };
 
-        if ($pattern === 'solid') {
-            return $baseDescription;
-        } elseif ($pattern === 'mostly_white') {
-            return "White with $baseDescription markings";
-        } else {
-            return "$baseDescription with white patches";
-        }
+        // Then add white pattern modifications
+        return match($pattern) {
+            'solid' => $baseDescription,
+            'mostly_white' => "White with $baseDescription markings",
+            default => "$baseDescription with white patches" // 'pied' pattern
+        };
     }
 
     public function getAlleles(): array
@@ -243,5 +246,101 @@ class DogGenome
     public function getPhenotype(): array
     {
         return $this->phenotype;
+    }
+
+
+    /**
+     * Creates a DogGenome instance from a genotype string.
+     * Format: "K1K2 A1A2 B1B2 S1S2 D1D2" where each pair represents alleles for:
+     * - K locus (dominant black)
+     * - A locus (agouti)
+     * - B locus (base color)
+     * - S locus (white spotting)
+     * - D locus (dilution)
+     *
+     * @param string $genotype Space-separated allele pairs
+     * @return self
+     * @throws \InvalidArgumentException
+     */
+    public static function fromGenotype(string $genotype): self
+    {
+        // Split into allele pairs
+        $pairs = explode(' ', trim($genotype));
+
+        if (count($pairs) !== 5) {
+            throw new \InvalidArgumentException(
+                'Genotype must contain exactly 5 space-separated allele pairs'
+            );
+        }
+
+        // Map positions to traits
+        $traitMap = [
+            0 => 'dominant_black',
+            1 => 'agouti',
+            2 => 'base_color',
+            3 => 'white_spotting',
+            4 => 'dilution'
+        ];
+
+        $alleles = [];
+        foreach ($pairs as $index => $pair) {
+            $trait = $traitMap[$index];
+
+            // Each pair should be exactly 2 characters for single-letter alleles
+            // or 4-6 characters for multi-letter alleles (e.g., 'kbr')
+            if (strlen($pair) < 2) {
+                throw new \InvalidArgumentException(
+                    "Invalid allele pair format for {$trait}: {$pair}"
+                );
+            }
+
+            // Get valid alleles for this trait
+            $validAlleles = array_column(self::INHERITANCE_PATTERNS[$trait], 'allele');
+
+            // Split the pair into individual alleles
+            // Handle both single-letter (e.g., 'Bb') and multi-letter (e.g., 'kbrkbr') alleles
+            $allele1 = self::extractFirstAllele($pair, $validAlleles);
+            $allele2 = self::extractSecondAllele($pair, $validAlleles);
+
+            // Validate both alleles
+            if (!in_array($allele1, $validAlleles) || !in_array($allele2, $validAlleles)) {
+                throw new \InvalidArgumentException(
+                    "Invalid allele(s) for {$trait}: {$allele1}, {$allele2}. " .
+                    "Valid alleles are: " . implode(', ', $validAlleles)
+                );
+            }
+
+            // Order the alleles based on dominance by creating a temporary instance
+            $temp = new self();
+            $alleles[$trait] = $temp->orderAlleles($allele1, $allele2, self::INHERITANCE_PATTERNS[$trait]);
+        }
+
+        return new self($alleles);
+    }
+
+    /**
+     * Extracts the first allele from a pair string
+     */
+    private static function extractFirstAllele(string $pair, array $validAlleles): string
+    {
+        foreach ($validAlleles as $validAllele) {
+            if (str_starts_with($pair, $validAllele)) {
+                return $validAllele;
+            }
+        }
+        throw new \InvalidArgumentException("Could not extract valid first allele from: {$pair}");
+    }
+
+    /**
+     * Extracts the second allele from a pair string
+     */
+    private static function extractSecondAllele(string $pair, array $validAlleles): string
+    {
+        foreach ($validAlleles as $validAllele) {
+            if (str_ends_with($pair, $validAllele)) {
+                return $validAllele;
+            }
+        }
+        throw new \InvalidArgumentException("Could not extract valid second allele from: {$pair}");
     }
 }
