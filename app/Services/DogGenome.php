@@ -24,9 +24,8 @@ class DogGenome
             'brown' => ['dominant' => false, 'allele' => 'b']
         ],
         'white_spotting' => [
-            'solid' => ['dominant' => false, 'allele' => 's'],
-            'pied' => ['dominant' => true, 'allele' => 'S'],
-            'extreme_white' => ['dominant' => true, 'allele' => 'Sw']
+            'solid' => ['dominant' => true, 'allele' => 'S'],
+            'pied' => ['dominant' => false, 'allele' => 'sp']
         ],
         'dilution' => [
             'normal' => ['dominant' => true, 'allele' => 'D'],
@@ -225,17 +224,17 @@ class DogGenome
                     default => 'Wild type (wolf-like)'
                 },
                 'tan_points' => "$color with tan points",
-                'recessive_black' => $color,
+//                'recessive_black' => $color,
                 default => $color
             }
         };
 
         // Then add white pattern modifications
-        return match($pattern) {
-            'solid' => $baseDescription,
-            'mostly_white' => "White with $baseDescription markings",
-            default => "$baseDescription with white patches" // 'pied' pattern
-        };
+        if ($pattern === 'solid') {
+            return $baseDescription;
+        } else {
+            return "$baseDescription with white patches";
+        }
     }
 
     public function getAlleles(): array
