@@ -238,7 +238,7 @@ class DogGenome
             },
             'allows_agouti' => match ($agoutiPattern) {
                 'sable' => "Sable with $color overlay",
-                'wild' => match ($color) {
+                'wild' => match (strtolower($color)) {
                     'blue' => 'Blue-gray wolf-like pattern',
                     'isabella' => 'Isabella wolf-like pattern',
                     default => 'Wild type (wolf-like)'
