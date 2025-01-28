@@ -52,21 +52,7 @@ class GeneticsGame extends Component
 
     protected function generateChoices(string $correctAnswer): array
     {
-        // Base patterns we can use
-        $patterns = [
-            'Sable with {color} overlay',
-            'White with {color} markings',
-            '{color} with tan points',
-            'Wild type with white patches',
-            'Solid {color}',
-            '{color} with white patches',
-            'Brindle with white patches',
-            'Brindle with tan points',
-            'White with brindle markings',
-            'Solid brindle'
-        ];
 
-        $colors = ['Black', 'Brown', 'Blue', 'Isabella'];
 
         // Always include the correct answer
         $choices = [$correctAnswer];
@@ -74,10 +60,9 @@ class GeneticsGame extends Component
         // Generate wrong answers until we have 4 unique choices
         while (count($choices) < 4) {
             // Pick a random pattern and color
-            $pattern = $patterns[array_rand($patterns)];
-            $color = $colors[array_rand($colors)];
+            $dogGenome = new DogGenome();
 
-            $wrongAnswer = str_replace('{color}', $color, $pattern);
+            $wrongAnswer = $dogGenome->getPhenotype()['description'];
 
             // Only add if it's not the correct answer and not already in choices
             if ($wrongAnswer !== $correctAnswer && !in_array($wrongAnswer, $choices)) {
