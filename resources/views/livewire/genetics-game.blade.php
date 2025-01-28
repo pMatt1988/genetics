@@ -8,7 +8,11 @@
 
         <!-- Alleles -->
         <div class="mb-12">
-            <div class="font-mono text-4xl text-center tracking-widest">{{ $alleleString }}</div>
+            <div class="font-mono text-8xl text-center tracking-widest">{{ $alleleString }}</div>
+        </div>
+
+        <div class="mb-6 text-center">
+            <p>Please pick the answer that best describes the phenotype of the above genotype.</p>
         </div>
 
         <form wire:submit.prevent="checkAnswer">
