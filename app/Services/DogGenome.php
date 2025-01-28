@@ -207,6 +207,8 @@ class DogGenome
     {
         $kPattern = $this->determineKPattern();
 
+        $color = ucfirst($color);
+
         // First determine base appearance based on K locus
         $baseDescription = match($kPattern) {
             'dominant_black' => $color,
