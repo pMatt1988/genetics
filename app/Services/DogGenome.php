@@ -233,6 +233,7 @@ class DogGenome
             'brindle' => match ($agoutiPattern) {
                 'wild' => "$color brindle wolf-like pattern",
                 'tan_points' => "$color with brindle points",
+                'recessive_black' => "$color",
                 default => "$color brindle"
             },
             'allows_agouti' => match ($agoutiPattern) {
