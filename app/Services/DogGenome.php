@@ -8,12 +8,18 @@ class DogGenome
     protected array $phenotype;
 
     const INHERITANCE_PATTERNS = [
+        'extension' => [
+            'normal' => ['dominant' => true,
+                'allele' => 'E'],
+            'recessive_red' => ['dominant' => false,
+                'allele' => 'e']
+        ],
         'dominant_black' => [
             'solid_black' => ['dominant' => true,
                 'allele' => 'K'],
             'brindle' => ['intermediate' => true,
                 'allele' => 'kbr'],
-            'allows_agouti' => ['dominant' => false,
+            'recessive_non_black' => ['dominant' => false,
                 'allele' => 'ky'],
         ],
         'agouti' => [
@@ -86,10 +92,8 @@ class DogGenome
         if (isset($info1['priority']) && isset($info2['priority'])) {
             if ($info1['priority'] !== $info2['priority']) {
                 return $info1['priority'] > $info2['priority'] ?
-                    [$allele1,
-                        $allele2] :
-                    [$allele2,
-                        $allele1];
+                    [$allele1, $allele2] :
+                    [$allele2, $allele1];
             }
         }
 
@@ -117,15 +121,15 @@ class DogGenome
 
         // If different dominance levels, higher dominance goes first
         if ($level1 !== $level2) {
-            return $level1 > $level2 ? [$allele1,
-                $allele2] : [$allele2,
-                $allele1];
+            return $level1 > $level2 ?
+                [$allele1, $allele2] :
+                [$allele2, $allele1];
         }
 
         // If same dominance level, order by string value
-        return $allele1 > $allele2 ? [$allele1,
-            $allele2] : [$allele2,
-            $allele1];
+        return $allele1 > $allele2 ?
+            [$allele1, $allele2] :
+            [$allele2, $allele1];
     }
 
     protected function calculatePhenotype(): void
@@ -133,6 +137,7 @@ class DogGenome
         $baseColor = $this->determineBaseColor();
         $diluted = $this->isDiluted();
         $pattern = $this->determinePattern();
+        $extension = $this->determineExtension();
         $isDominantBlack = $this->isDominantBlack();
         $agoutiPattern = $isDominantBlack ? 'dominant_black' : $this->determineAgoutiPattern();
 
@@ -143,8 +148,9 @@ class DogGenome
             'pattern' => $pattern,
             'agouti' => $agoutiPattern,
             'dominant_black' => $isDominantBlack,
+            'extension' => $extension,
             'dilution' => $diluted ? 'dilute' : 'normal',
-            'description' => $this->generateDescription($finalColor, $pattern, $agoutiPattern)
+            'description' => $this->generateDescription($finalColor, $pattern, $agoutiPattern, $extension)
         ];
     }
 
@@ -218,38 +224,54 @@ class DogGenome
         }
 
         // kyky allows A locus expression
-        return 'allows_agouti';
+        return 'recessive_non_black';
     }
 
-    protected function generateDescription(string $color, string $pattern, string $agoutiPattern): string
+    protected function determineExtension(): string
     {
-        $kPattern = $this->determineKPattern();
+        $allele_pair = $this->alleles['extension'];
 
-        $color = ucfirst($color);
+        if (in_array('E', $allele_pair)) return 'normal';
+        return 'recessive_red';
+    }
 
-        // First determine base appearance based on K locus
-        $baseDescription = match ($kPattern) {
-            'dominant_black' => $color,
-            'brindle' => match ($agoutiPattern) {
-                'wild' => "$color brindle wolf-like pattern",
-                'tan_points' => "$color with brindle points",
-                'recessive_black' => "$color",
-                default => "$color brindle"
-            },
-            'allows_agouti' => match ($agoutiPattern) {
-                'sable' => "Sable with $color overlay",
-                'wild' => match (strtolower($color)) {
-                    'blue' => 'Blue-gray wolf-like pattern',
-                    'isabella' => 'Isabella wolf-like pattern',
-                    default => 'Wild type (wolf-like)'
+    protected function generateDescription(string $color, string $pattern, string $agoutiPattern, string $extension): string
+    {
+        // Handle recessive red first as it's epistatic to most other loci
+        if ($extension === 'recessive_red') {
+            $baseDescription = match (strtolower($color)) {
+                'black' => 'Red',
+                'blue' => 'Light red',
+                'brown' => 'Red',
+                'isabella' => 'Light red',
+                default => 'Red'
+            };
+        } else {
+            $kPattern = $this->determineKPattern();
+
+            // First determine base appearance based on K locus
+            $baseDescription = match ($kPattern) {
+                'dominant_black' => $color,
+                'brindle' => match ($agoutiPattern) {
+                    'wild' => "$color brindle wolf-like pattern",
+                    'tan_points' => "$color with brindle points",
+                    'recessive_black' => "$color",
+                    default => "$color brindle"
                 },
-                'tan_points' => "$color with tan points",
-                default => $color
-            }
-        };
+                'recessive_non_black' => match ($agoutiPattern) {
+                    'sable' => "Sable with $color overlay",
+                    'wild' => match (strtolower($color)) {
+                        'blue' => 'Blue-gray wolf-like pattern',
+                        'isabella' => 'Isabella wolf-like pattern',
+                        default => 'Wild type (wolf-like)'
+                    },
+                    'tan_points' => "$color with tan points",
+                    default => $color
+                }
+            };
+        }
 
         // Then add white pattern modifications
-
         return match ($pattern) {
             'solid' => $baseDescription,
             'minimal_white' => "$baseDescription with minimal white",
@@ -267,38 +289,25 @@ class DogGenome
         return $this->phenotype;
     }
 
-
-    /**
-     * Creates a DogGenome instance from a genotype string.
-     * Format: "K1K2 A1A2 B1B2 S1S2 D1D2" where each pair represents alleles for:
-     * - K locus (dominant black)
-     * - A locus (agouti)
-     * - B locus (base color)
-     * - S locus (white spotting)
-     * - D locus (dilution)
-     *
-     * @param string $genotype Space-separated allele pairs
-     * @return self
-     * @throws \InvalidArgumentException
-     */
     public static function fromGenotype(string $genotype): self
     {
         // Split into allele pairs
         $pairs = explode(' ', trim($genotype));
 
-        if (count($pairs) !== 5) {
+        if (count($pairs) !== 6) {
             throw new \InvalidArgumentException(
-                'Genotype must contain exactly 5 space-separated allele pairs'
+                'Genotype must contain exactly 6 space-separated allele pairs'
             );
         }
 
         // Map positions to traits
         $traitMap = [
-            0 => 'dominant_black',
-            1 => 'agouti',
-            2 => 'base_color',
-            3 => 'white_spotting',
-            4 => 'dilution'
+            0 => 'extension',
+            1 => 'dominant_black',
+            2 => 'agouti',
+            3 => 'base_color',
+            4 => 'white_spotting',
+            5 => 'dilution'
         ];
 
         $alleles = [];
@@ -337,9 +346,6 @@ class DogGenome
         return new self($alleles);
     }
 
-    /**
-     * Extracts the first allele from a pair string
-     */
     private static function extractFirstAllele(string $pair, array $validAlleles): string
     {
         foreach ($validAlleles as $validAllele) {
@@ -350,9 +356,6 @@ class DogGenome
         throw new \InvalidArgumentException("Could not extract valid first allele from: {$pair}");
     }
 
-    /**
-     * Extracts the second allele from a pair string
-     */
     private static function extractSecondAllele(string $pair, array $validAlleles): string
     {
         foreach ($validAlleles as $validAllele) {

@@ -26,8 +26,10 @@ class GeneticsGame extends Component
         $genome = new DogGenome();
         $alleles = $genome->getAlleles();
 
-        // Format alleles with K locus first, then A locus, followed by others
-        $this->alleleString = sprintf("%s%s %s%s %s%s %s%s %s%s",
+        // Format alleles with E locus first, then K locus, then others
+        $this->alleleString = sprintf("%s%s %s%s %s%s %s%s %s%s %s%s",
+            $alleles['extension'][0],
+            $alleles['extension'][1],
             $alleles['dominant_black'][0],
             $alleles['dominant_black'][1],
             $alleles['agouti'][0],
@@ -45,15 +47,10 @@ class GeneticsGame extends Component
         $this->selectedChoice = null;
         $this->submitted = false;
         $this->feedback = '';
-
-        // Debugging - let's see what alleles we're getting
-        // dd($alleles, $this->alleleString);
     }
 
     protected function generateChoices(string $correctAnswer): array
     {
-
-
         // Always include the correct answer
         $choices = [$correctAnswer];
 
