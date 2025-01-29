@@ -27,20 +27,7 @@ class GeneticsGame extends Component
         $alleles = $genome->getAlleles();
 
         // Format alleles with E locus first, then K locus, then others
-        $this->alleleString = sprintf("%s%s %s%s %s%s %s%s %s%s %s%s",
-            $alleles['extension'][0],
-            $alleles['extension'][1],
-            $alleles['dominant_black'][0],
-            $alleles['dominant_black'][1],
-            $alleles['agouti'][0],
-            $alleles['agouti'][1],
-            $alleles['base_color'][0],
-            $alleles['base_color'][1],
-            $alleles['white_spotting'][0],
-            $alleles['white_spotting'][1],
-            $alleles['dilution'][0],
-            $alleles['dilution'][1]
-        );
+        $this->alleleString = $genome->toHtmlString();
 
         $this->currentPhenotype = $genome->getPhenotype();
         $this->choices = $this->generateChoices($this->currentPhenotype['description']);

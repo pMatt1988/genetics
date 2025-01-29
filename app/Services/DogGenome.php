@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use Illuminate\Support\HtmlString;
+
 class DogGenome
 {
     protected array $alleles;
@@ -64,7 +66,7 @@ class DogGenome
         foreach (self::INHERITANCE_PATTERNS as $trait => $patterns) {
             $allele1 = $this->getRandomAllele($patterns);
             $allele2 = $this->getRandomAllele($patterns);
-            $alleles[$trait] = $this->orderAlleles($allele1, $allele2, $patterns);
+            $alleles[$trait] = static::orderAlleles($allele1, $allele2, $patterns);
         }
         return $alleles;
     }
@@ -75,7 +77,7 @@ class DogGenome
         return $possible_alleles[array_rand($possible_alleles)];
     }
 
-    protected function orderAlleles(string $allele1, string $allele2, array $patterns): array
+    protected static function orderAlleles(string $allele1, string $allele2, array $patterns): array
     {
         // Get pattern info for each allele
         $getPatternInfo = function ($allele) use ($patterns) {
@@ -336,9 +338,8 @@ class DogGenome
                 );
             }
 
-            // Order the alleles based on dominance by creating a temporary instance
-            $temp = new self();
-            $alleles[$trait] = $temp->orderAlleles($allele1, $allele2, self::INHERITANCE_PATTERNS[$trait]);
+
+            $alleles[$trait] = static::orderAlleles($allele1, $allele2, self::INHERITANCE_PATTERNS[$trait]);
         }
 
         return new self($alleles);
@@ -363,4 +364,30 @@ class DogGenome
         }
         throw new \InvalidArgumentException("Could not extract valid second allele from: {$pair}");
     }
+
+    public function toHtmlString(): string
+    {
+        $alleleStrings = [];
+
+        foreach($this->alleles as $trait => $pair) {
+            foreach($pair as &$allele) {
+                $allele = $this->addSupToAllele($allele);
+            }
+            $alleleStrings[] = implode('/', $pair);
+        }
+
+        return new HtmlString(implode(' ', $alleleStrings));
+    }
+
+    private function addSupToAllele($allele): string
+    {
+        $arr = str_split($allele);
+        $first = array_shift($arr);
+
+        //combine the rest of $arr into a string
+        $rest = implode($arr);
+
+        return $first . ($rest ? '<sup>' . $rest . '</sup>': '');
+    }
+
 }

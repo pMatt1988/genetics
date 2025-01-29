@@ -8,7 +8,7 @@
 
         <!-- Alleles -->
         <div class="mb-12">
-            <div class="font-mono text-3xl text-center tracking-widest">{{ $alleleString }}</div>
+            <div class="font-mono text-3xl text-center tracking-widest">{!! $alleleString !!}</div>
         </div>
 
         <div class="mb-6 text-center">
