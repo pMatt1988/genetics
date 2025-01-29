@@ -1,5 +1,6 @@
 @extends('layout')
 
+
 @section('content')
-    <livewire:genetics-game/>
+    <livewire:genotype-sandbox/>
 @endsection

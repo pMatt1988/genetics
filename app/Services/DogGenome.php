@@ -240,10 +240,9 @@ class DogGenome
         // Handle recessive red first as it's epistatic to most other loci
         if ($extension === 'recessive_red') {
             $baseDescription = match (strtolower($color)) {
-                'black' => 'Red',
-                'blue' => 'Light red',
-                'brown' => 'Red',
-                'isabella' => 'Light red',
+                'blue' => 'Dilute Red',
+                'brown' => 'Liver Red',
+                'isabella' => 'Isabella Red',
                 default => 'Red'
             };
         } else {
@@ -272,11 +271,11 @@ class DogGenome
         }
 
         // Then add white pattern modifications
-        return match ($pattern) {
+        return ucfirst(match ($pattern) {
             'solid' => $baseDescription,
             'minimal_white' => "$baseDescription with minimal white",
             default => "$baseDescription with white patches"
-        };
+        });
     }
 
     public function getAlleles(): array
