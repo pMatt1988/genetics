@@ -1,5 +1,5 @@
 <!-- resources/views/livewire/genotype-sandbox.blade.php -->
-<div class="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md">
+<div class="max-w-5xl mx-auto p-6 bg-white rounded-lg shadow-md">
     <form wire:submit.prevent="updateGenotypeDescription" class="space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- E Locus -->

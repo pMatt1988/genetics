@@ -35,7 +35,7 @@ class DogGenome
         'base_color' => [
             'black' => ['dominant' => true,
                 'allele' => 'B'],
-            'brown' => ['dominant' => false,
+            'liver' => ['dominant' => false,
                 'allele' => 'b']
         ],
         'white_spotting' => [
@@ -168,7 +168,7 @@ class DogGenome
     protected function determineBaseColor(): string
     {
         $allele_pair = $this->alleles['base_color'];
-        return (in_array('B', $allele_pair)) ? 'black' : 'brown';
+        return (in_array('B', $allele_pair)) ? 'black' : 'liver';
     }
 
     protected function isDiluted(): bool
@@ -181,7 +181,7 @@ class DogGenome
     {
         return match ($baseColor) {
             'black' => 'blue',
-            'brown' => 'isabella',
+            'liver' => 'isabella',
             default => $baseColor
         };
     }
@@ -237,33 +237,32 @@ class DogGenome
 
     protected function generateDescription(string $color, string $pattern, string $agoutiPattern, string $extension): string
     {
+
         // Handle recessive red first as it's epistatic to most other loci
         if ($extension === 'recessive_red') {
             $baseDescription = match (strtolower($color)) {
                 'blue' => 'Dilute Red',
-                'brown' => 'Liver Red',
+                'liver' => 'Liver Red',
                 'isabella' => 'Isabella Red',
                 default => 'Red'
             };
         } else {
             $kPattern = $this->determineKPattern();
 
+
+
             // First determine base appearance based on K locus
             $baseDescription = match ($kPattern) {
                 'dominant_black' => $color,
                 'brindle' => match ($agoutiPattern) {
-                    'wild' => "$color brindle wolf-like pattern",
+                    'wild' => "$color brindle with agouti",
                     'tan_points' => "$color with brindle points",
                     'recessive_black' => "$color",
                     default => "$color brindle"
                 },
                 'recessive_non_black' => match ($agoutiPattern) {
                     'sable' => "Sable with $color overlay",
-                    'wild' => match (strtolower($color)) {
-                        'blue' => 'Blue-gray wolf-like pattern',
-                        'isabella' => 'Isabella wolf-like pattern',
-                        default => 'Wild type (wolf-like)'
-                    },
+                    'wild' => "$color with agouti",
                     'tan_points' => "$color with tan points",
                     default => $color
                 }
@@ -272,9 +271,9 @@ class DogGenome
 
         // Then add white pattern modifications
         return ucfirst(match ($pattern) {
-            'solid' => $baseDescription,
-            'minimal_white' => "$baseDescription with minimal white",
-            default => "$baseDescription with white patches"
+            default => $baseDescription,
+            'pied' => "Pied $baseDescription",
+            'minimal_white' => "$baseDescription and minimal white",
         });
     }
 
