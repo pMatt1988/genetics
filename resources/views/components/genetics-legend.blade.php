@@ -76,7 +76,7 @@
                             <h3 class="text-xl mt-4"><strong>A Locus</strong></h3>
                             <div class="pl-3">
                                 <p><strong>A<sup>y</sup></strong> - Sable</p>
-                                <p><strong>A<sup>w</sup></strong> - Wild type</p>
+                                <p><strong>A<sup>w</sup></strong> - Agouti</p>
                                 <p><strong>a<sup>t</sup></strong> - Tan points</p>
                                 <p><strong>a</strong> - Recessive Black</p>
                             </div>
